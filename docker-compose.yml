@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  vastai-complete:
+    build: .
+    container_name: vastai-complete
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+      - prometheus_data:/prometheus-data
+      - grafana_data:/grafana-data
+      - /run/nvidia/driver:/run/nvidia/driver:ro
+      - /run/nvidia-container-devices:/run/nvidia-container-devices:ro
+      - /usr/bin/nvidia-smi:/usr/bin/nvidia-smi:ro
+    ports:
+      - "3000:3000"   # Grafana
+      - "9090:9090"   # Prometheus
+      - "9100:9100"   # Node Exporter
+      - "8080:8080"   # cAdvisor
+      - "9400:9400"   # DCGM Exporter
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    runtime: nvidia
+    privileged: true
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+    driver: local
+    driver_opts:
+      o: size=50G
+      device: tmpfs
+      type: tmpfs
+  grafana_data:
